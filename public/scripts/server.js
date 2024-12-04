@@ -35,19 +35,7 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
         this.poisonedPlayers = {};
         this.ChestIndex = 0
 
-        this.setListeners()
-
         photonClient = this;
-    }
-
-    setListeners() {
-        this.onEvent = this.onEvent.bind(this);
-        this.onActorJoin = this.onActorJoin.bind(this);
-        this.onActorLeave = this.onActorLeave.bind(this);
-        this.onConnect = this.onConnect.bind(this);
-        this.onDisconnect = this.onDisconnect.bind(this);
-        this.onJoinRoom = this.onJoinRoom.bind(this);
-        this.onError = this.onError.bind(this);
     }
 
     setOnJoin(callback) {

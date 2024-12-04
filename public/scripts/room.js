@@ -98,25 +98,17 @@ window.onload = () => {
         window.Server.connectToRegionMaster("sa");
 
         window.Server.onStateChange = (state) => {
-            console.log("Photon State Changed:", state);
-            switch (state) {
-                case Photon.LoadBalancing.LoadBalancingClient.State.ConnectedToMaster:
-                    console.log("Conectado ao Master Server.");
-                    if (State === "Join") {
-                        joinRoom(roomName);
-                    } else if (State === "Create") {
-                        createRoom(roomName);
-                    }
-                    break;
-        
-                case Photon.LoadBalancing.LoadBalancingClient.State.Joined:
-                    console.log("Entrou na sala com sucesso.");
-                    renderPlayerList(window.Server.myRoomActors());
-                    RoomCreatorUI();
-                    break;
-        
-                default:
-                    console.warn("Estado desconhecido:", state);
+            if (state === Photon.LoadBalancing.LoadBalancingClient.State.ConnectedToMaster) {
+                if (State === "Join") {
+                    joinRoom(roomName);
+                } else if (State === "Create") {
+                    createRoom(roomName);
+                }
+            } else if (state === Photon.LoadBalancing.LoadBalancingClient.State.Joined) {
+                renderPlayerList(window.Server.myRoomActors());
+                RoomCreatorUI()
+
+                console.log(window.Server.myRoomActors())
             }
         };
 
