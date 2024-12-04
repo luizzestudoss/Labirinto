@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Game</title>
+    <link rel="stylesheet" href="styles/room.css">
+
+    <script src="../libraries/photon.min.js"></script>
+    <script src="../libraries/p5.min.js"></script>
+    <script src="../libraries/p5.sound.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+    <script type="module" src="scripts/room.js"></script>
+
+    <script src="./scripts/Maze/MazeGenerator.js"></script>
+    <script src="./scripts/Maze/CharacterManager.js"></script>
+    <script src="./scripts/Maze/ChestHandler.js"></script>
+    <script src="./scripts/Maze/CameraHandler.js"></script>
+    <script src="./scripts/Maze/DebugHandler.js"></script>
+    <script src="./scripts/Maze/InterfaceHandler.js"></script>
+    <script src="./scripts/Maze/MinigameBar.js"></script>
+    <script src="./scripts/Maze/EffectsHandler.js"></script>
+    <script src="./scripts/Maze/DoorHandler.js"></script>
+    <script src="./scripts/Maze/sketch.js"></script>
+</head>
+<body>
+    <div id="main-container" class="container">
+        <div class="container">
+            <h1 id="room-title">Código da sala: </h1>
+            <h2>Jogadores:</h2>
+            <ul id="players" class="players-list"></ul>
+    
+            <div class="controls">
+                <input type="text" id="player-name" placeholder="Coloque seu nome" />
+                <button id="update-name" class="btn">Atualizar Nome</button>
+            </div>
+        </div>
+    
+        <div id="creator-container" class="container" >
+            <div id="creator-menu">
+                <h3>Menu do Criador</h3>
+                
+                <label for="game-mode">Modo de Jogo:</label>
+                <select id="game-mode">
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Médio</option>
+                    <option value="hard">Difícil</option>
+                </select>
+                <br>
+    
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <label for="map-dimensions">Tamanho do Mapa:</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input id="map-width" type="number" value="25" min="1" />
+                        <span>x</span>
+                        <input id="map-height" type="number" value="25" min="1" />
+                    </div>
+                </div>
+                
+    
+                <div>
+                    <label for="monster-mode">Selecionar Monstro:</label>
+                    <select id="monster-mode">
+                        <option value="roomOwner">O monstro será o dono da sala</option>
+                        <option value="randomPlayer">O monstro será um jogador aleatório</option>
+                        <option value="bot">O monstro será um bot</option>
+                    </select>
+                </div>
+                <br />
+                <div id="bot-settings" style="display: none;">
+                    <label for="bot-count">Quantidade de Bots:</label>
+                    <input id="bot-count" type="number" value="1" min="1" style="width: 60px;" />
+                </div>
+                <br />
+                
+                <div class="debug-container">
+                    <label class="debug-label" for="debug-mode">
+                        <input id="debug-mode" type="checkbox" />
+                        <span class="custom-checkbox"></span>
+                        Debug Mode
+                    </label>
+                </div>
+    
+                <div id="seed-display">Seed: </div>
+                <input id="seed-input" type="number" placeholder="Insira uma nova seed aqui" />
+
+                <button id="start-game" class="btn">Começar o jogo</button>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

@@ -1,0 +1,1 @@
+export const PHOTON_APP_ID = "e3472fec-e863-4780-818f-499934016bb2";

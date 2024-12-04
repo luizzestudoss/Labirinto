@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photon Multiplayer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #game-container {
+            width: 500px;
+            height: 500px;
+            margin: 20px auto;
+            border: 1px solid black;
+        }
+    </style>
+    <script src="./libraries/p5.min.js"></script>
+    <script src="./libraries/photon.min.js"></script>
+    <script type="module" src="../src/game.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #game-container { width: 500px; height: 500px; margin: 20px auto; border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <h1>Photon Multiplayer Game</h1>
+    <button onclick="createRoom()">Criar Sala</button>
+    <button onclick="joinRoom()">Entrar na Sala</button>
+    <div id="game-container"></div>
+</body>
+</html>

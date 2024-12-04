@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto</title>
+    <link rel="stylesheet" href="styles/menu.css">
+</head>
+<body>
+    <div id="menu-container" class="hidden">
+        <h1 id="game-title">Labirinto do Monstro</h1>
+        <p>Escolha seu modo de jogo:</p>
+        <button class="menu-button" id="singleplayer-btn">Modo Solo</button>
+        <button class="menu-button" id="multiplayer-btn">Modo Multiplayer</button>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuContainer = document.getElementById('menu-container');
+
+            menuContainer.classList.remove('hidden');
+            menuContainer.classList.add('visible');
+        });
+
+        document.getElementById('singleplayer-btn').addEventListener('click', () => {
+            SelectMode('singleplayer.html');
+        });
+
+        document.getElementById('multiplayer-btn').addEventListener('click', () => {
+            SelectMode('multiplayer.html');
+        });
+
+        function SelectMode(dest) {
+            const menuContainer = document.getElementById('menu-container');
+            menuContainer.classList.add('slide-out');
+
+            setTimeout(() => {
+                window.location.href = dest;
+            }, 500);
+        }
+    </script>
+</body>
+</html>
