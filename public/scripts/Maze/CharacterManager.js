@@ -88,7 +88,7 @@ class CharacterManager {
       this.MaxStamina = 100
       this.Stamina = this.MaxStamina
 
-      this.IsPoisoned = false;
+      this.isPoisoned = false;
       this.lastPoisonTick = 0;
       this.poisonDamage = .025;
 
@@ -133,34 +133,44 @@ class CharacterManager {
             isMoving: this.isMoving,
             currentDirection: this.currentDirection,
             isAttacking: this.isAttacking,
-            IsPoisoned: this.IsPoisoned
         };
 
         window.Server.myActor().setCustomProperty("player", playerdata);
         window.Server.raiseEvent(1, { actorNr: window.Server.myActor().actorNr, playerdata });
     }
+    
+    renderLocalPlayer() {
+        const actor = window.Server.myActor();
+    
+        if (!actor) {
+            console.error("Ator local não encontrado!");
+            return;
+        }
+    
+        const isPoisoned = window.Server.poisonedPlayers && window.Server.poisonedPlayers[actor.actorNr];
+    
+        if (isPoisoned) {
+            this.isPoisoned = true;
+            this.canMove = false;
+        } else {
+            this.isPoisoned = false;
+            this.canMove = true;
+        }
+    }
+    
+    
 
     replicaIsPoisoned() {
-        const isPoisoned = this.IsPoisoned;
+        const targetActorNr = this.playerData.actorNr;
+        const isPoisoned = true;
     
-        window.Server.myActor().setCustomProperty("isPoisoned", isPoisoned);
+        window.Server.raiseEvent(2, { 
+            actorId: targetActorNr,
+            isPoisoned: isPoisoned,
+        });
     }
-
-    renderLocalPlayer() {
-        const actorData = window.Server.myActor().customProperties.player;
-
-        if (!actorData) {
-            return
-        }
-        console.log(actorData)
-
-
-        this.IsPoisoned = actorData.IsPoisoned
-
-        if (this.IsPoisoned) {
-            SpiderWebAnimation(this)
-        }
-    }
+    
+    
     
     renderReplicatedPlayer() {
         if (!this.playerData || !this.playerData.customProperties) {
@@ -178,7 +188,6 @@ class CharacterManager {
         this.currentDirection = actorData.currentDirection
         this.isMoving = actorData.isMoving
         this.isAttacking = actorData.isAttacking
-        this.IsPoisoned = actorData.IsPoisoned
 
         if (this.Type === "Player") {
           this.animateCharacter();
@@ -187,7 +196,7 @@ class CharacterManager {
         }
 
         
-        if (this.IsPoisoned) {
+        if (this.isPoisoned) {
             SpiderWebAnimation(this)
         }
       
@@ -265,8 +274,13 @@ class CharacterManager {
             this.showHitbox(hitboxX,hitboxY,hitboxSize,hitboxSize);
         }
 
-        this.renderLocalPlayer()
         this.replicaServer()
+        this.renderLocalPlayer()
+
+
+        if (this.isPoisoned) {
+            SpiderWebAnimation(this)
+        }
     }
 
     findClosestPlayer() {
@@ -274,7 +288,7 @@ class CharacterManager {
         let minDistance = Infinity;
     
         for (let player of players) {
-            if (!player.IsPoisoned) {
+            if (!player.isPoisoned) {
                 const distance = dist(this.pos.x, this.pos.y, player.pos.x, player.pos.y);
                 if (distance < minDistance) {
                     minDistance = distance;
@@ -438,7 +452,7 @@ class CharacterManager {
     }
 
     handlePoison() {
-        if (this.IsPoisoned && Date.now() - this.lastPoisonTick > 1) {
+        if (this.isPoisoned && Date.now() - this.lastPoisonTick > 1) {
             this.lastPoisonTick = Date.now();
             if (this.Health - this.poisonDamage < 0) {
                 this.Health = 0;
@@ -559,17 +573,9 @@ class CharacterManager {
         let drawY = this.pos.y - drawSize / 2 + offsetY;
     
         image(spriteSheet, drawX, drawY, drawSize, drawSize, sx, sy, this.spriteWidth, this.spriteHeight);
-
-        if (this.isAttacking) {
-            this.MonsterAttack()
-        }
     }
 
     MonsterAttack() {
-        this.isAttacking = true;
-        this.canMove = false;
-    
- 
         const attackRange = 50;
         const widthMultiplier = 1.2;
         const heightMultiplier = 1.1;
@@ -613,17 +619,18 @@ class CharacterManager {
                 break;
         }
         
+
         players.forEach(Player => {
-            if (player === Player) return;
-            if (
-                Player.pos.x >= hitbox.x &&
-                Player.pos.x <= hitbox.x + hitbox.width &&
-                Player.pos.y >= hitbox.y &&
-                Player.pos.y <= hitbox.y + hitbox.height
-            ) {
-                Player.isPoisoned = true;
-                Player.canMove = false;
-                Player.replicaIsPoisoned();
+            if (Player.playerData) {
+                if (
+                    Player.pos.x >= hitbox.x &&
+                    Player.pos.x <= hitbox.x + hitbox.width &&
+                    Player.pos.y >= hitbox.y &&
+                    Player.pos.y <= hitbox.y + hitbox.height
+                ) {
+                    Player.isPoisoned = true;
+                    Player.replicaIsPoisoned();
+                }
             }
         });
 
@@ -631,8 +638,6 @@ class CharacterManager {
             this.showHitbox(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
         }
     }
-    
-    
 
     addItem(item) {
         if (!this.Inventory.includes(item)) {

@@ -20,6 +20,7 @@ class MazeGenerator {
     this.chest = null;
     this.lastChestOpened = null;
     this.hasChest = false;
+    this.chestIndex = 0
 
     random = new Math.seedrandom(this.seed);
   }
@@ -104,7 +105,7 @@ class MazeGenerator {
 
       this.chest = new Chest(chestX, chestY);
       this.hasChest = true;
-  }
+    }
 }
 
   addRandomDoors() {
@@ -178,9 +179,17 @@ class MazeGenerator {
   resetChestIfOpened() {
     if (this.chest && this.chest.isOpened) {
         this.hasChest = false;
+
+        window.Server.raiseEvent(10);
+
         this.lastChestOpened = this.chest;
         this.chest = null;
         this.generateChest();
+    } else if (window.Server.chestIndex > this.chestIndex) {
+      this.chestIndex += 1
+      this.lastChestOpened = this.chest;
+      this.chest = null;
+      this.generateChest();
     }
   }
 

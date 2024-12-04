@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Labirinto</title>
-    <link rel="stylesheet" href="styles/menu.css">
+    <link rel="stylesheet" href="public/styles/menu.css">
 </head>
 <body>
     <div id="menu-container" class="hidden">
@@ -23,11 +23,11 @@
         });
 
         document.getElementById('singleplayer-btn').addEventListener('click', () => {
-            SelectMode('singleplayer.html');
+            SelectMode('public/singleplayer.html');
         });
 
         document.getElementById('multiplayer-btn').addEventListener('click', () => {
-            SelectMode('multiplayer.html');
+            SelectMode('public/multiplayer.html');
         });
 
         function SelectMode(dest) {

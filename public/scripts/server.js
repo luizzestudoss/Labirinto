@@ -32,6 +32,8 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
         this.currentPlayer = {}
         this.roomCreator = null;
         this.isServer = true;
+        this.poisonedPlayers = {};
+        this.ChestIndex = 0
 
         photonClient = this;
     }
@@ -114,19 +116,40 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
             this.players = {};
             for (const actorId in this.myRoomActors()) {
                 const actor = this.myRoomActors()[actorId];
-                const playerData = actor.getCustomProperty("player") || {
-                    name: `Player${actorId}`,
-                    pos: { x: 0, y: 0 },
-                };
-
-                if (actorId === `${content.actorNr}` && content.isPoisoned !== undefined) {
-                    playerData.IsPoisoned = content.isPoisoned;
-                }
-    
+                const playerData = actor.getCustomProperty("player") || {};
+        
                 this.players[actorId] = playerData;
             }
+        } else if (code === 2) {
+            const actorId = content.actorId;
+            const isPoisoned = content.isPoisoned;
+
+            const actor = this.myRoomActors()[actorId];
+            if (actor) {
+                const playerData = actor.getCustomProperty("player") || {};
+                playerData.isPoisoned = isPoisoned;
+    
+                actor.setCustomProperty("player", playerData);
+                this.players[actorId] = playerData;
+    
+                if (isPoisoned) {
+                    this.poisonedPlayers = this.poisonedPlayers || {};
+                    this.poisonedPlayers[actorId] = true;
+                } else if (this.poisonedPlayers) {
+                    delete this.poisonedPlayers[actorId];
+                }
+            } else {
+                console.error(`Ator ${actorId} não encontrado!`);
+            }
+        } else if (code == 10) {
+            this.ChestIndex += 1
+            console.log(`Novo ChestIndex: ${this.ChestIndex}`);
+
+            maze.hasChest = false;
+            maze.generateChest();
         }
     }
+    
     
 
     onError(errorCode, errorMsg) {
@@ -158,5 +181,9 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
             const ownerActorNr = this.myActor().actorNr;
             this.myRoom().setCustomProperties({ monsterActorNr: ownerActorNr });
         }
+    }
+
+    getPoisonedPlayers() {
+        return Object.keys(this.poisonedPlayers);
     }
 }

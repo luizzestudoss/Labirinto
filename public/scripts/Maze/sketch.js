@@ -175,7 +175,6 @@ function draw() {
       }
     }
     
-  
     for (let spider of Spiders) {
       spider.moveAI();
     } 
@@ -223,6 +222,8 @@ function mouseClicked() {
   if (player) {
     player.isAttacking = true;
     player.CanMove = false;
+    
+    player.MonsterAttack()
     setTimeout(() => {
       player.isAttacking = false;
       player.CanMove = true;
