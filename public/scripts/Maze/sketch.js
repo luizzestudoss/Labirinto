@@ -34,21 +34,21 @@ let Spiders = [];
 
 
 function preload() {
-  Textures["FloorTexture"] = loadImage('assets/Textures/Floor3.jpg');
-  Textures["WallTexture"] = loadImage('assets/Textures/Wall.jpg');
-  Textures['DoorTexture'] = loadImage('assets/Textures/Wall1.jpg');
+  Textures["FloorTexture"] = loadImage('/assets/Textures/Floor3.jpg');
+  Textures["WallTexture"] = loadImage('/assets/Textures/Wall.jpg');
+  Textures['DoorTexture'] = loadImage('/assets/Textures/Wall1.jpg');
 
   Sprites["MainCharacter"] = {}
 
   let MainCharacter = Sprites["MainCharacter"]
-  MainCharacter['up'] = loadImage('assets/Sprites/MainCharacter/up.png');
-  MainCharacter['down'] = loadImage('assets/Sprites/MainCharacter/down.png');
-  MainCharacter['left'] = loadImage('assets/Sprites/MainCharacter/left.png');
-  MainCharacter['right'] = loadImage('assets/Sprites/MainCharacter/right.png');
+  MainCharacter['up'] = loadImage('/assets/Sprites/MainCharacter/up.png');
+  MainCharacter['down'] = loadImage('/assets/Sprites/MainCharacter/down.png');
+  MainCharacter['left'] = loadImage('/assets/Sprites/MainCharacter/left.png');
+  MainCharacter['right'] = loadImage('/assets/Sprites/MainCharacter/right.png');
 
-  Sprites["Monster"] = loadImage('assets/Sprites/Monster/SpiderSprite.png')
+  Sprites["Monster"] = loadImage('/assets/Sprites/Monster/SpiderSprite.png')
   Sprites['SpiderWebEffect'] = loadImage('/assets/Sprites/SpiderWebEffect.png')
-  Sprites['Chest'] = loadImage('assets/Sprites/Chest.png')
+  Sprites['Chest'] = loadImage('/assets/Sprites/Chest.png')
 }
 
 function spawnSpiders(botCount) {
