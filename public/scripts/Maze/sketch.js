@@ -34,9 +34,9 @@ let Spiders = [];
 
 
 function preload() {
-  Textures["FloorTexture"] = loadImage('/assets/Textures/Floor3.jpg');
-  Textures["WallTexture"] = loadImage('/assets/Textures/Wall.jpg');
-  Textures['DoorTexture'] = loadImage('/assets/Textures/Wall1.jpg');
+  Textures["FloorTexture"] = loadImage('https://i.ibb.co/JRJTgkd/Floor3.jpg');
+  Textures["WallTexture"] = loadImage('https://i.ibb.co/wrQ7pGp/Wall.jpg');
+  Textures['DoorTexture'] = loadImage('https://i.ibb.co/g99X28s/Wall1.jpg');
 
   Sprites["MainCharacter"] = {}
 
