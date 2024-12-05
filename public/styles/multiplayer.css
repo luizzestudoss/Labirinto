@@ -1,10 +1,9 @@
-/* Estilo geral */
 body {
     margin: 0;
     padding: 0;
     font-family: 'Arial', sans-serif;
-    background-color: #1e1e2f; /* Fundo escuro */
-    color: #e5e5e5; /* Texto em cinza claro */
+    background-color: #1e1e2f;
+    color: #e5e5e5;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,11 +14,10 @@ body {
 h1 {
     font-size: 2rem;
     margin-bottom: 1.5rem;
-    color: #ffffff; /* Título destacado */
+    color: #ffffff;
     text-align: center;
 }
 
-/* Estilo do container de seleção de sala */
 #room-selection, #create-room {
     margin: 1rem 0;
 }
@@ -30,7 +28,7 @@ h1 {
     margin-right: 0.5rem;
     border: 1px solid #3a3a4f;
     border-radius: 5px;
-    background-color: #2e2e3f; /* Fundo escuro do input */
+    background-color: #2e2e3f;
     color: #e5e5e5;
     outline: none;
     font-size: 1rem;
@@ -38,14 +36,14 @@ h1 {
 }
 
 #room-selection input:focus {
-    border-color: #6272a4; /* Cor de foco */
+    border-color: #6272a4;
 }
 
 button {
     padding: 0.8rem 1.2rem;
     font-size: 1rem;
     color: #ffffff;
-    background-color: #6272a4; /* Botão com cor destacada */
+    background-color: #6272a4;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -53,28 +51,16 @@ button {
 }
 
 button:hover {
-    background-color: #7082c4; /* Cor ao passar o mouse */
+    background-color: #7082c4;
     transform: scale(1.05);
 }
 
 button:active {
-    background-color: #5062a4; /* Cor ao clicar */
+    background-color: #5062a4;
 }
 
 #room-selection, #create-room {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-/* Estilo responsivo */
-@media (max-width: 768px) {
-    #room-selection input {
-        width: 200px;
-    }
-
-    button {
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
-    }
 }
