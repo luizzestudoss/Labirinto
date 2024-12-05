@@ -88,23 +88,34 @@ class MazeGenerator {
 
     let possibleCells = [];
     
+    // Coletar todas as células válidas
     for (let x = 0; x < this.cols; x++) {
         for (let y = 0; y < this.rows; y++) {
             let cell = this.grid[x][y];
 
+            // Verifica se a célula atende às condições de paredes
             if (cell.walls[0] && cell.walls[1] && !cell.walls[2] && cell.walls[3]) {
-                possibleCells.push(cell);
+                // Evita a mesma posição que o último baú
+                if (!this.lastChestOpened || (cell.x !== this.lastChestOpened.x || cell.y !== this.lastChestOpened.y)) {
+                    possibleCells.push(cell);
+                }
             }
         }
     }
 
+    // Selecionar uma célula com base no chestIndex
     if (possibleCells.length > 0) {
-      let randomCell = possibleCells[Math.floor(random() * possibleCells.length)];
-      let chestX = randomCell.x;
-      let chestY = randomCell.y;
+        let randomIndex = this.chestIndex % possibleCells.length; // Usa chestIndex para sincronizar
+        let chosenCell = possibleCells[randomIndex];
 
-      this.chest = new Chest(chestX, chestY);
-      this.hasChest = true;
+        let chestX = chosenCell.x;
+        let chestY = chosenCell.y;
+
+        this.chest = new Chest(chestX, chestY);
+        this.hasChest = true;
+
+        // Atualiza lastChestOpened
+        this.lastChestOpened = { x: chestX, y: chestY };
     }
 }
 
@@ -186,7 +197,7 @@ class MazeGenerator {
         this.chest = null;
         this.generateChest();
     } else if (window.Server.chestIndex > this.chestIndex) {
-      this.chestIndex += 1
+      this.chestIndex = window.Server.chestIndex
       this.lastChestOpened = this.chest;
       this.chest = null;
       this.generateChest();
