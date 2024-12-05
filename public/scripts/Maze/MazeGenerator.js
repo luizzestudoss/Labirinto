@@ -22,6 +22,9 @@ class MazeGenerator {
     this.hasChest = false;
     this.chestIndex = 0
 
+    this.Door1 = null;
+    this.Door2 = null;
+
     random = new Math.seedrandom(this.seed);
   }
 
@@ -87,19 +90,31 @@ class MazeGenerator {
     if (this.hasChest) return;
 
     let possibleCells = [];
-    
+    const minDistance = 3;
+
     for (let x = 0; x < this.cols; x++) {
         for (let y = 0; y < this.rows; y++) {
             let cell = this.grid[x][y];
 
             if (cell.walls[0] && cell.walls[1] && !cell.walls[2] && cell.walls[3]) {
-                if (!this.lastChestOpened || (cell.x !== this.lastChestOpened.x || cell.y !== this.lastChestOpened.y)) {
+                let isFarEnough = true;
+
+                if (this.lastChestOpened) {
+                    let dx = cell.x - this.lastChestOpened.x;
+                    let dy = cell.y - this.lastChestOpened.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < minDistance) {
+                        isFarEnough = false;
+                    }
+                }
+
+                if (isFarEnough) {
                     possibleCells.push(cell);
                 }
             }
         }
     }
-
     if (possibleCells.length > 0) {
         let randomIndex = this.chestIndex % possibleCells.length;
         let chosenCell = possibleCells[randomIndex];
@@ -140,11 +155,17 @@ class MazeGenerator {
   
       if (x === 0) cell.walls[3] = false;
       if (y === 0) cell.walls[0] = false;
-      if (x === this.cols - 1) cell.walls[1] = false;
+      if (x === this.cols - 1) cell.walls[1] = false; 
       if (y === this.rows - 1) cell.walls[2] = false;
 
-      cell.Door = new DoorHandler(cell.wallDoor)
+      cell.Door = new DoorHandler(cell.wallDoor,this.Door1 ? 2 : 1)
       cell.Door.assignKey(keys);
+
+      if (!this.Door1) {
+        this.Door1 = cell.Door
+      } else {
+        this.Door2 = cell.Door
+      }
     }
   }
   
@@ -180,7 +201,8 @@ class MazeGenerator {
     }
   } 
 
-  resetChestIfOpened() {
+
+  RenderServerReplication() {
     if (this.chest && this.chest.isOpened) {
         this.hasChest = false;
 
@@ -189,14 +211,23 @@ class MazeGenerator {
         this.lastChestOpened = this.chest;
         this.chest = null;
         this.generateChest();
-    } else if (window.Server.chestIndex > this.chestIndex) {
+    }
+
+    if (window.Server.chestIndex !== this.chestIndex) {
       this.chestIndex = window.Server.chestIndex
       this.lastChestOpened = this.chest;
       this.chest = null;
       this.generateChest();
     }
-  }
 
+    if (window.Server.Doors[1] && !this.Door1.Opened) {
+      this.Door1.Opened = true;
+    }
+
+    if (window.Server.Doors[2] && !this.Door2.Opened) {
+      this.Door2.Opened = true;
+    }
+  }
 
   addBorderWalls() {
     for (let x = 0; x < this.cols; x++) {
@@ -271,7 +302,7 @@ class MazeGenerator {
   }
 
   render() {
-    this.resetChestIfOpened()
+    this.RenderServerReplication()
 
     let visibleWidth = Math.ceil(windowWidth / (this.cellSize * zoom));
     let visibleHeight = Math.ceil(windowHeight / (this.cellSize * zoom));
@@ -295,7 +326,6 @@ class MazeGenerator {
     }
 
     if (this.lastChestOpened ) {
-      console.log(this.lastChestOpened)
       this.lastChestOpened.show()
     }
 

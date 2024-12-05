@@ -33,7 +33,12 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
         this.roomCreator = null;
         this.isServer = true;
         this.poisonedPlayers = {};
-        this.ChestIndex = 0
+        this.chestIndex = 0
+        this.Doors = {
+            1: false,
+            2: false
+        }
+        this.EscapedPlayers = {}
 
         photonClient = this;
     }
@@ -141,15 +146,32 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
             } else {
                 console.error(`Ator ${actorId} não encontrado!`);
             }
-        } else if (code == 10) {
-            this.ChestIndex += 1
-            console.log(`Novo ChestIndex: ${this.ChestIndex}`);
+        } else if (code === 10) {
+            this.chestIndex += 1
 
             maze.hasChest = false;
             maze.generateChest();
+        } else if (code === 20) {
+            const doorIndex = content.doorIndex
+
+            this.Doors[doorIndex] = true
+        } else if (code === 30) {
+            const playerId = content.playerId;
+            console.log(playerId)
+            //this.EscapedPlayers[playerId] = true;
+        
+            gameRunning = false;
+            hasExited = true;
         }
     }
-    
+
+    hasPlayerEscaped(playerId) {
+        return this.EscapedPlayers[playerId] || false;
+    }
+
+    getEscapedPlayers() {
+        return Object.keys(this.EscapedPlayers);
+    }
     
 
     onError(errorCode, errorMsg) {

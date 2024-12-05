@@ -11,7 +11,8 @@ let debug = {
 
 let players = []
 
-let gameStarted = false;
+let gameRunning = false;
+let hasExited = false;
 
 let maze;
 let player;
@@ -146,7 +147,7 @@ function initializeGame() {
 
   minigame = new MinigameBar();
 
-  gameStarted = true;
+  gameRunning = true;
 }
 
 function waitForGameStart() {
@@ -158,7 +159,7 @@ function waitForGameStart() {
 }
 
 function draw() {
-  if (gameStarted) {
+  if (gameRunning) {
     background(0)
   
     let cameraX = -player.pos.x * zoom + width / 2;
@@ -188,7 +189,44 @@ function draw() {
     }
     
     interfaceHandler.DrawUI()
-  }
+  } else if (hasExited) {
+    background(20, 20, 50); 
+    for (let i = 0; i < 200; i++) {
+        fill(100, 100, 150, random(50, 100));
+        ellipse(random(width), random(height), random(2, 8), random(2, 8)); 
+    }
+
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    fill(255, 0, 0);
+    textFont('Georgia');
+    text("VOCÊ ESCAPOU DO LABIRINTO!", width / 2, height / 4);
+
+    textSize(28);
+    fill(200);
+    text("Jogadores que escaparam até agora:", width / 2, height / 2 - 80);
+
+    let yOffset = height / 2 - 50;
+    let exitedPlayers = window.Server.getEscapedPlayers();
+    for (let i = 0; i < exitedPlayers.length; i++) {
+        let alpha = map(i, 0, exitedPlayers.length, 100, 255);
+        fill(255, 255, 255, alpha);
+        textSize(24);
+        text(`${i + 1}. ${exitedPlayers[i]}`, width / 2, yOffset);
+        yOffset += 35;
+    }
+
+    textSize(22);
+    fill(255, 200, 200);
+    text("Aguarde os outros jogadores...", width / 2, height - 50);
+
+    noStroke();
+    for (let i = 0; i < 50; i++) {
+        fill(255, 255, 255, 20); 
+        ellipse(random(width), height - random(20), random(100, 300), random(20, 40));
+    }
+}
+
 }
 
 function windowResized() {
@@ -249,29 +287,14 @@ function keyReleased() {
 
 /* TO DO:
 Balancear o jogo
-Fazer o modo singleplayer
 Colocar os sons
 Jumpscares
-dar deploy
-
-Attack {
-  Corrigir a hitbox (tamanho e está pegando através das paredes)
-}
-
-Servidor {
-  Calcular o attack
-  Calcular o baú
-  Calcular as portas abertas
-}
-
-Geral {
-Fazer uma tela de terminou o jogo
-Fazer uma tela para entrar na porta (pode ser instantaneo)
-}
 
 Sistema de correr
 Sistema de salvar amigo
 
+Resolver tela de sair
+Resolver jogadores que saiem do jogo
 
 Refatoração
 */

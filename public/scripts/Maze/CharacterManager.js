@@ -575,15 +575,16 @@ class CharacterManager {
         image(spriteSheet, drawX, drawY, drawSize, drawSize, sx, sy, this.spriteWidth, this.spriteHeight);
     }
 
+
     MonsterAttack() {
         const attackRange = 50;
         const widthMultiplier = 1.2;
         const heightMultiplier = 1.1;
         const monsterWidth = this.w;
         const monsterHeight = this.w;
-    
+
         let hitbox = {};
-    
+
         switch (this.currentDirection) {
             case 'up':
                 hitbox = {
@@ -618,18 +619,27 @@ class CharacterManager {
                 };
                 break;
         }
-        
 
         players.forEach(Player => {
             if (Player.playerData) {
+                const playerX = Player.pos.x;
+                const playerY = Player.pos.y;
+
                 if (
-                    Player.pos.x >= hitbox.x &&
-                    Player.pos.x <= hitbox.x + hitbox.width &&
-                    Player.pos.y >= hitbox.y &&
-                    Player.pos.y <= hitbox.y + hitbox.height
+                    playerX >= hitbox.x &&
+                    playerX <= hitbox.x + hitbox.width &&
+                    playerY >= hitbox.y &&
+                    playerY <= hitbox.y + hitbox.height
                 ) {
-                    Player.isPoisoned = true;
-                    Player.replicaIsPoisoned();
+                    const dx = playerX - this.pos.x;
+                    const dy = playerY - this.pos.y;
+
+                    const [validMoveX, validMoveY] = this.checkHitbox(dx, dy);
+
+                    if (validMoveX && validMoveY) {
+                        Player.isPoisoned = true;
+                        Player.replicaIsPoisoned();
+                    }
                 }
             }
         });
@@ -638,6 +648,7 @@ class CharacterManager {
             this.showHitbox(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
         }
     }
+
 
     addItem(item) {
         if (!this.Inventory.includes(item)) {

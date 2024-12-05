@@ -1,7 +1,3 @@
-function dist(x1, y1, x2, y2) {
-  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-}
-
 class Chest {
   constructor(x, y) {
     this.x = x;
@@ -14,6 +10,7 @@ class Chest {
     this.frameHeight = 64;
 
     this.ChestMessageIndex = null;
+    this.minigameActive = false;
   }
 
   generateContents() {
@@ -36,17 +33,21 @@ class Chest {
       }
 
       interfaceHandler.AddGameText(`Itens do baú: ${this.contents}`, 0.5, 0.2, 1500);
-
     } else {
-      interfaceHandler.AddGameText("Este baú já está aberto.`",.5,.2,1500)
+      interfaceHandler.AddGameText("Este baú já está aberto.", .5, .2, 1500);
     }
   }
-  
-  DisableEffects() {
-    interfaceHandler.RemoveGameText(this.ChestMessageIndex);
-    minigame.stop()
 
-    this.ChestMessageIndex = null;
+  DisableEffects() {
+    if (this.ChestMessageIndex !== null) {
+      interfaceHandler.RemoveGameText(this.ChestMessageIndex);
+      this.ChestMessageIndex = null;
+    }
+
+    if (this.minigameActive) {
+      minigame.stop();
+      this.minigameActive = false;
+    }
   }
 
   show() {
@@ -61,7 +62,7 @@ class Chest {
     const sy = 0;
 
     image(
-        Sprites['Chest'], 
+        Sprites['Chest'],
         x - displayWidth / 2, 
         y - displayHeight / 2 - maze.cellSize / 5, 
         displayWidth,
@@ -75,7 +76,7 @@ class Chest {
     const distance = dist(player.pos.x, player.pos.y, x, y);
 
     if (distance < 50) {
-        if (this.ChestMessageIndex === null) {
+        if (this.ChestMessageIndex === null && !this.minigameActive) { 
             this.ChestMessageIndex = interfaceHandler.AddGameText(
                 "[Segure espaço para abrir o baú]",
                 .5,
@@ -83,14 +84,14 @@ class Chest {
             );
             
             minigame.configure(3000, () => {
-              this.openChest()
-              this.DisableEffects()
+              this.openChest();
+              this.DisableEffects();
+              this.minigameActive = false;
             });
+            this.minigameActive = true;
         }
-    } else {
-      if (this.ChestMessageIndex !== null) {
-          this.DisableEffects()
-        }
-      }
+    } else if (distance > 50) {
+      this.DisableEffects();
+    }
   }
 }
