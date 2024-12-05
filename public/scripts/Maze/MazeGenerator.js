@@ -290,12 +290,13 @@ class MazeGenerator {
       }
     }
 
-    if (maze.chest) {
-      maze.chest.show()
+    if (this.chest) {
+      this.chest.show()
     }
 
-    if (maze.lastChestOpened) {
-      maze.lastChestOpened.show()
+    if (this.lastChestOpened ) {
+      console.log(this.lastChestOpened)
+      this.lastChestOpened.show()
     }
 
   }
