@@ -41,14 +41,14 @@ function preload() {
   Sprites["MainCharacter"] = {}
 
   let MainCharacter = Sprites["MainCharacter"]
-  MainCharacter['up'] = loadImage('/assets/Sprites/MainCharacter/up.png');
-  MainCharacter['down'] = loadImage('/assets/Sprites/MainCharacter/down.png');
-  MainCharacter['left'] = loadImage('/assets/Sprites/MainCharacter/left.png');
-  MainCharacter['right'] = loadImage('/assets/Sprites/MainCharacter/right.png');
+  MainCharacter['up'] = loadImage('https://i.ibb.co/k6WkZBB/up.png');
+  MainCharacter['down'] = loadImage('https://i.ibb.co/rwDCFLN/down.png');
+  MainCharacter['left'] = loadImage('https://i.ibb.co/SvmK19z/left.png');
+  MainCharacter['right'] = loadImage('https://i.ibb.co/Yyj3KdC/right.png');
 
-  Sprites["Monster"] = loadImage('/assets/Sprites/Monster/SpiderSprite.png')
-  Sprites['SpiderWebEffect'] = loadImage('/assets/Sprites/SpiderWebEffect.png')
-  Sprites['Chest'] = loadImage('/assets/Sprites/Chest.png')
+  Sprites["Monster"] = loadImage('https://i.ibb.co/7vKkZ9m/Spider-Sprite.png')
+  Sprites['SpiderWebEffect'] = loadImage('https://i.ibb.co/bBVBhNH/Spider-Web-Effect.png')
+  Sprites['Chest'] = loadImage('https://i.ibb.co/TWsZb7K/Chest.png')
 }
 
 function spawnSpiders(botCount) {
