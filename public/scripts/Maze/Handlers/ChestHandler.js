@@ -61,7 +61,7 @@ class Chest {
     );
 
     const distance = dist(player.pos.x, player.pos.y, x, y);
-    if (distance < 50 && player.Type !== "Monster") {
+    if (distance < 25 && player.Type !== "Monster") {
         if (this.ChestMessageIndex === null) { 
             this.ChestMessageIndex = interfaceHandler.AddGameText(
                 "[Segure espaço para abrir o baú]",
@@ -74,7 +74,7 @@ class Chest {
             });
             minigame.canHoldSpace = true;
         }
-    } else if (distance > 50) {
+    } else if (distance > 25) {
       if (this.ChestMessageIndex !== null) {
         interfaceHandler.RemoveGameText(this.ChestMessageIndex);
         this.ChestMessageIndex = null;

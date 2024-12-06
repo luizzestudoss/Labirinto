@@ -306,6 +306,10 @@ function showEscapeScreen() {
     textSize(22);
     fill(255, 200, 200);
     text("Aguarde os outros jogadores...", width / 2, height - 50);
+
+    if (exitedPlayers < totalPlayers - 1) {
+      showRedirectButton();
+    }
   } else {
     showRedirectButton();
   }
@@ -403,16 +407,27 @@ function drawFog() {
   drawingContext.fillRect(-width, -height, width * 999, height * 999);
 }
 
+let lastAttackTime = 0;
+const attackCooldown = 1500;
+
 function mouseClicked() {
   if (player && player.Type == "Monster") {
-    player.isAttacking = true;
-    player.CanMove = false;
-    
-    player.MonsterAttack()
-    setTimeout(() => {
-      player.isAttacking = false;
-      player.CanMove = true;
-    }, 800);
+    const currentTime = Date.now();
+    if (currentTime - lastAttackTime >= attackCooldown) {
+      player.isAttacking = true;
+      player.CanMove = false;
+      
+      player.MonsterAttack();
+      
+      lastAttackTime = currentTime;
+      
+      setTimeout(() => {
+        player.isAttacking = false;
+        player.CanMove = true;
+      }, 800);
+    } else {
+      console.log("Ataque em cooldown!");
+    }
   }
 }
 

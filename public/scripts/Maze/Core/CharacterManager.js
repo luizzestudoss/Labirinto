@@ -21,7 +21,7 @@ class CharacterManager {
 
       this.isPoisoned = false;
       this.lastPoisonTick = 0;
-      this.poisonDamage = debug.debugMode ? 10 : .025;
+      this.poisonDamage = debug.debugMode ? 10 : .045;
 
       this.canMove = true;
       this.currentDirection = "down"

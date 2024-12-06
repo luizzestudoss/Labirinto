@@ -19,7 +19,7 @@ class DoorHandler {
 
     render(x, y, size) {
         let distance = dist(player.pos.x, player.pos.y, x, y);
-        const inRange = distance < 40 && player.Type == "Player";
+        const inRange = distance < 20 && player.Type == "Player";
     
         if (!this.Opened) {
             let doorTexture = Textures["DoorTexture"];
