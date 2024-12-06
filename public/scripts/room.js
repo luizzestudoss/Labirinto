@@ -116,6 +116,7 @@ window.onload = () => {
         };
 
         window.Server.onError = (errorCode, errorMessage) => {
+            alert(errorMessage)
             redirectToMultiplayerPage()
         };
 
