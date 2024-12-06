@@ -432,7 +432,7 @@ function mouseClicked() {
 }
 
 function keyPressed() {
-  if (keyCode === 32 && minigame.canHoldSpace) {
+  if (keyCode === 32 && minigame && minigame.canHoldSpace) {
       isHoldingSpace = true;
       if (!minigame.active) {
           minigame.start();
