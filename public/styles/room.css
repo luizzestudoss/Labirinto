@@ -7,6 +7,7 @@ body {
     display: grid;
     place-items: center;
     overflow: hidden;
+    overflow-y: auto;
 }
 
 
@@ -28,6 +29,7 @@ body {
     padding: 20px;
     width: 100%;
     max-width: 480px;
+    
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(0, 0, 0, 0.5);
     text-align: center;
     
@@ -164,12 +166,12 @@ input:focus, select:focus {
 }
 
 .debug-label {
-    font-size: 14px; /* Alinha com o restante do layout */
-    color: #333; /* Cor do texto */
+    font-size: 14px;
+    color: #333;
     display: flex;
     align-items: center;
     cursor: pointer;
-    gap: 8px; /* Espaço entre a checkbox e o texto */
+    gap: 8px;
 }
 
 #debug-mode {

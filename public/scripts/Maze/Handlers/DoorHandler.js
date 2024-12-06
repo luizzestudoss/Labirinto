@@ -9,7 +9,6 @@ class DoorHandler {
         this.DoorMessageExitIndex = null;
 
         this.DoorIndex = doorIndex
-
     }
     
     assignKey(keys) {
@@ -44,36 +43,30 @@ class DoorHandler {
                     );
                 }
     
-                if (!minigame.active) {
-                    minigame.configure(
-                        500,
-                        () => {
+                minigame.configure(
+                    debug.debugMode ? 0 : 10000,
+                    () => {
+                        if (player.hasItem(this.key)) {
+                            this.Opened = true;
+                            interfaceHandler.AddGameText("A porta foi aberta.", .5, .2, 2500);
+
+                            window.Server.raiseEvent(20,{doorIndex: this.DoorIndex})
+
                             if (this.DoorMessageIndex !== null) {
                                 interfaceHandler.RemoveGameText(this.DoorMessageIndex);
                                 this.DoorMessageIndex = null;
                             }
-
-                            minigame.stop();
-
-                            if (true || player.hasItem(this.key)) {
-                                this.Opened = true;
-                                window.Server.raiseEvent(20, { doorIndex: this.DoorIndex });
-                                interfaceHandler.AddGameText("A porta foi aberta.", 0.5, 0.2, 1500);
-                            } else {
-                                interfaceHandler.AddGameText("Esta porta está trancada.", 0.5, 0.2, 1500);
-                            }
+                        } else {
+                            interfaceHandler.AddGameText("Esta porta está trancada.", .5, .2, 2500);
                         }
-                    );
-                    minigame.start();
-                }
+                    }
+                );
+                minigame.canHoldSpace = true;
             } else {
                 if (this.DoorMessageIndex !== null) {
                     interfaceHandler.RemoveGameText(this.DoorMessageIndex);
                     this.DoorMessageIndex = null;
-                }
-    
-                if (minigame.active) {
-                    minigame.stop();
+                    minigame.canHoldSpace = false;
                 }
             }
         } else {
@@ -94,23 +87,25 @@ class DoorHandler {
                                 interfaceHandler.RemoveGameText(this.DoorMessageExitIndex);
                                 this.DoorMessageExitIndex = null;
                             }
-
-                            minigame.stop();
-                            //window.Server.raiseEvent(30, { actorNr: window.Server.myActor().actorNr});
                             gameRunning = false;
                             hasExited = true;
+                            player.setHasEscaped();
+                            player.replicaServer();
                         }
                     );
-                    minigame.start();
+    
+                    minigame.canHoldSpace = true;
                 }
             } else {
-                if (minigame.active) {
-                    minigame.stop();
-                }
-
                 if (this.DoorMessageExitIndex !== null) {
                     interfaceHandler.RemoveGameText(this.DoorMessageExitIndex);
                     this.DoorMessageExitIndex = null;
+                    minigame.canHoldSpace = false;
+                }
+
+                if (this.DoorMessageIndex !== null) {
+                    interfaceHandler.RemoveGameText(this.DoorMessageIndex);
+                    this.DoorMessageIndex = null;
                 }
             }
         }

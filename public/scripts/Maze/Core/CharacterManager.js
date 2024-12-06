@@ -1,74 +1,3 @@
-function aStar(grid, start, end) {
-    if (!isValidCoordinate(grid, start) || !isValidCoordinate(grid, end)) {
-        return [];
-    }
-
-    let openSet = [];
-    let closedSet = [];
-    let cameFrom = new Map();
-
-    let startNode = grid[start.x][start.y];
-    let endNode = grid[end.x][end.y];
-
-    openSet.push(startNode);
-
-    let gScore = new Map();
-    gScore.set(startNode, 0);
-
-    let fScore = new Map();
-    fScore.set(startNode, heuristic(startNode, endNode));
-
-    while (openSet.length > 0) {
-        let current = openSet.reduce((a, b) => (fScore.get(a) < fScore.get(b) ? a : b));
-
-        if (current === endNode) {
-            return reconstructPath(cameFrom, current);
-        }
-
-        openSet = openSet.filter(node => node !== current);
-        closedSet.push(current);
-
-        for (let neighbor of current.getNeighbors(grid)) {
-            if (closedSet.includes(neighbor)) continue;
-
-            let tentativeGScore = gScore.get(current) + 1;
-
-            if (!openSet.includes(neighbor)) {
-                openSet.push(neighbor);
-            } else if (tentativeGScore >= gScore.get(neighbor)) {
-                continue;
-            }
-
-            cameFrom.set(neighbor, current);
-            gScore.set(neighbor, tentativeGScore);
-            fScore.set(neighbor, gScore.get(neighbor) + heuristic(neighbor, endNode));
-        }
-    }
-
-    return [];
-}
-
-function isValidCoordinate(grid, node) {
-    return node.x >= 0 && node.x < grid.length && node.y >= 0 && node.y < grid[0].length;
-}
-
-function heuristic(nodeA, nodeB) {
-    if (!nodeB) {
-        return 0;
-    }
-    return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);
-}
-
-
-function reconstructPath(cameFrom, current) {
-    let totalPath = [current];
-    while (cameFrom.has(current)) {
-        current = cameFrom.get(current);
-        totalPath.unshift(current);
-    }
-    return totalPath;
-}
-
 class CharacterManager {
     constructor(startPos, w, grid, type, playerData) {
       this.playerData = playerData 
@@ -82,6 +11,8 @@ class CharacterManager {
       this.w = w;
       this.speed = this.Type == "Monster" ? MonsterSpeed : MainCharacterSpeed;
 
+      this.isSprinting = false;
+
       this.MaxHealth = 100
       this.Health = this.MaxHealth
 
@@ -90,7 +21,7 @@ class CharacterManager {
 
       this.isPoisoned = false;
       this.lastPoisonTick = 0;
-      this.poisonDamage = .025;
+      this.poisonDamage = debug.debugMode ? 10 : .025;
 
       this.canMove = true;
       this.currentDirection = "down"
@@ -107,10 +38,29 @@ class CharacterManager {
       this.spriteWidth = 128;
       this.spriteHeight = 128;
 
-
       this.path = []
       this.target = null;
+
+      this.RescueMessageIndex = null;
+      this.HasEscaped = false;
+      this.isDead = false;
     }
+
+    showName() {
+        if (player.Type === "Monster" || this.Type == "Monster") return;
+    
+        textSize(10);
+        textAlign(CENTER, CENTER);
+        fill(255, 200, 200);
+    
+        let name = window.Server.myActor().getCustomProperties().name;
+    
+        let textX = this.pos.x;
+        let textY = this.pos.y - 10;
+    
+        text(name, textX, textY);
+    }
+    
 
     showHitbox(x, y, height, width) {
         noFill();
@@ -123,6 +73,9 @@ class CharacterManager {
         fill(255);
     }
     
+    setHasEscaped() {
+        this.HasEscaped = true
+    }
 
     replicaServer() {
         const playerdata = {
@@ -133,11 +86,25 @@ class CharacterManager {
             isMoving: this.isMoving,
             currentDirection: this.currentDirection,
             isAttacking: this.isAttacking,
+            isPoisoned: this.isPoisoned
         };
+    
+        if (this.HasEscaped) {
+            playerdata.HasEscaped = true;
+        }
 
+        if (this.isDead) {
+            playerdata.isDead = true
+        }
+    
         window.Server.myActor().setCustomProperty("player", playerdata);
-        window.Server.raiseEvent(1, { actorNr: window.Server.myActor().actorNr, playerdata });
+    
+        window.Server.raiseEvent(1, {
+            actorNr: window.Server.myActor().actorNr,
+            playerdata
+        });
     }
+    
     
     renderLocalPlayer() {
         const actor = window.Server.myActor();
@@ -157,8 +124,6 @@ class CharacterManager {
             this.canMove = true;
         }
     }
-    
-    
 
     replicaIsPoisoned() {
         const targetActorNr = this.playerData.actorNr;
@@ -170,7 +135,15 @@ class CharacterManager {
         });
     }
     
+    replicaIsNotPoisoned() {
+        const targetActorNr = this.playerData.actorNr;
+        const isPoisoned = false;
     
+        window.Server.raiseEvent(2, { 
+            actorId: targetActorNr,
+            isPoisoned: isPoisoned,
+        });
+    }
     
     renderReplicatedPlayer() {
         if (!this.playerData || !this.playerData.customProperties) {
@@ -178,7 +151,6 @@ class CharacterManager {
         }
       
         const actorData = this.playerData.customProperties.player;
-
         if (!actorData) {
             return
         }
@@ -188,6 +160,19 @@ class CharacterManager {
         this.currentDirection = actorData.currentDirection
         this.isMoving = actorData.isMoving
         this.isAttacking = actorData.isAttacking
+        this.isPoisoned = actorData.isPoisoned
+
+        if (actorData.HasEscaped) {
+            this.HasEscaped = actorData.HasEscaped
+        }
+
+        if (actorData.isDead) {
+            this.isDead = actorData.isDead
+        }
+        
+        if (this.HasEscaped || this.isDead )  {
+            return
+        }
 
         if (this.Type === "Player") {
           this.animateCharacter();
@@ -195,11 +180,35 @@ class CharacterManager {
           this.animateMonster();
         }
 
-        
         if (this.isPoisoned) {
             SpiderWebAnimation(this)
+
+            const distance = dist(player.pos.x, player.pos.y, this.pos.x, this.pos.y);
+            if (distance < 30 && player.Type !== "Monster" && !player.isPoisoned) {
+                if (this.RescueMessageIndex === null) { 
+                    this.RescueMessageIndex = interfaceHandler.AddGameText(
+                        "[Segure espaço para salvar seu amigo]",
+                        .5,
+                        .7
+                    );
+                    
+                    minigame.configure(3000, () => {
+                      this.replicaIsNotPoisoned()
+                    });
+                    minigame.canHoldSpace = true;
+                }
+            } else if (distance > 30) {
+              if (this.RescueMessageIndex !== null) {
+                interfaceHandler.RemoveGameText(this.RescueMessageIndex);
+                this.RescueMessageIndex = null;
+        
+                minigame.canHoldSpace = false;
+              }
+            }
         }
       
+        this.showName()
+
         if (debug.showHitbox) {
           const hitboxSize = this.w / 2;
           const hitboxX = this.pos.x - hitboxSize / 2;
@@ -208,12 +217,50 @@ class CharacterManager {
         }
     }
 
+    sprint() {
+        if (this.Type == "Monster") return
+        if (this.Stamina > 0) {
+            this.Stamina -= 0.75;
+            this.speed = debug.debugMode ? this.speed : MainCharacterSpeed * 2;
+            this.isSprinting = true;
+        } else {
+            this.stopSprint();
+        }
+    }
+
+    canStartSprint() {
+        return this.Stamina >= this.MaxStamina * 0.2;
+    }
+
+    stopSprint() {
+        this.isSprinting = false;
+        this.speed = debug.debugMode ? this.speed : MainCharacterSpeed;
+    }
+
+
+    regenerateStamina() {
+        if (!this.isSprinting && this.Stamina < this.MaxStamina) {
+            this.Stamina += 0.1;
+        }
+        this.Stamina = constrain(this.Stamina, 0, this.MaxStamina);
+    }
+
 
     move() {
         this.handlePoison()
 
         let dx = 0;
         let dy = 0;
+
+        if (keyIsDown(SHIFT)) {
+            if (this.isSprinting || this.canStartSprint()) {
+                this.sprint();
+            }
+        } else {
+            this.stopSprint();
+        }
+
+        this.regenerateStamina(); 
     
         if (millis() - this.lastDirectionChange > this.directionCooldown) {
             if (keyIsDown(87) || keyIsDown(UP_ARROW)) {
@@ -276,7 +323,6 @@ class CharacterManager {
 
         this.replicaServer()
         this.renderLocalPlayer()
-
 
         if (this.isPoisoned) {
             SpiderWebAnimation(this)
@@ -456,8 +502,21 @@ class CharacterManager {
             this.lastPoisonTick = Date.now();
             if (this.Health - this.poisonDamage < 0) {
                 this.Health = 0;
+
+                if (!this.isDead) {
+                    window.Server.raiseEvent(40,{message: "O jogador " + window.Server.myActor().getCustomProperty("name") + " acabou de morrer!"})
+                    this.isDead = true;
+                }
             } else {
                 this.Health -=  this.poisonDamage
+            }
+        }
+
+        if (this.Health < this.MaxHealth && !this.isPoisoned && !this.isDead) {
+            this.Health += this.regenerationRate;
+    
+            if (this.Health > this.MaxHealth) {
+                this.Health = this.MaxHealth;
             }
         }
     }
@@ -529,11 +588,16 @@ class CharacterManager {
         let spriteSheet = Sprites["Monster"]
         let frameBase = this.isMoving ? 5 : 5;
     
-        if (this.isMoving && millis() - this.lastFrameChange > 1000 / this.frameRate) {
-            this.frameIndex = ((this.frameIndex - frameBase + 1) % (10 - frameBase + 1)) + frameBase;
-            this.lastFrameChange = millis();
+        if (this.isMoving) {
+            if (this.isMoving && millis() - this.lastFrameChange > 1000 / this.frameRate) {
+                this.frameIndex = ((this.frameIndex - frameBase + 1) % (10 - frameBase + 1)) + frameBase;
+                this.lastFrameChange = millis();
+            }
+        
+        } else {
+            this.frameIndex = 7
         }
-    
+
         let directionColumn = 
             this.currentDirection === "left" ? 0 : 
             this.currentDirection === "up" ? 2 : 
@@ -637,7 +701,6 @@ class CharacterManager {
                     const [validMoveX, validMoveY] = this.checkHitbox(dx, dy);
 
                     if (validMoveX && validMoveY) {
-                        Player.isPoisoned = true;
                         Player.replicaIsPoisoned();
                     }
                 }

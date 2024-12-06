@@ -102,3 +102,19 @@ p {
 #credits.visible {
     opacity: 1;
 }
+button:disabled {
+    background-color: #e0e0e0;
+    color: #888;
+    cursor: not-allowed;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 14px;
+    opacity: 0.6
+    transition: opacity 0.3s ease;
+}
+
+button:not(:disabled):hover {
+    background-color: #f1f1f1;
+    border-color: #888;
+}

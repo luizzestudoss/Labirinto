@@ -10,7 +10,6 @@ class Chest {
     this.frameHeight = 64;
 
     this.ChestMessageIndex = null;
-    this.minigameActive = false;
   }
 
   generateContents() {
@@ -32,21 +31,9 @@ class Chest {
         player.addItem(this.contents);
       }
 
-      interfaceHandler.AddGameText(`Itens do baú: ${this.contents}`, 0.5, 0.2, 1500);
+      interfaceHandler.AddGameText(`Itens do baú: ${this.contents}`, 0.5, 0.2, 2500);
     } else {
-      interfaceHandler.AddGameText("Este baú já está aberto.", .5, .2, 1500);
-    }
-  }
-
-  DisableEffects() {
-    if (this.ChestMessageIndex !== null) {
-      interfaceHandler.RemoveGameText(this.ChestMessageIndex);
-      this.ChestMessageIndex = null;
-    }
-
-    if (this.minigameActive) {
-      minigame.stop();
-      this.minigameActive = false;
+      interfaceHandler.AddGameText("Este baú já está aberto.", .5, .2, 2500);
     }
   }
 
@@ -74,24 +61,26 @@ class Chest {
     );
 
     const distance = dist(player.pos.x, player.pos.y, x, y);
-
-    if (distance < 50) {
-        if (this.ChestMessageIndex === null && !this.minigameActive) { 
+    if (distance < 50 && player.Type !== "Monster") {
+        if (this.ChestMessageIndex === null) { 
             this.ChestMessageIndex = interfaceHandler.AddGameText(
                 "[Segure espaço para abrir o baú]",
                 .5,
                 .7
             );
             
-            minigame.configure(3000, () => {
-              this.openChest();
-              this.DisableEffects();
-              this.minigameActive = false;
+            minigame.configure(debug.debugMode ? 0 : 3000, () => {
+              this.openChest()
             });
-            this.minigameActive = true;
+            minigame.canHoldSpace = true;
         }
     } else if (distance > 50) {
-      this.DisableEffects();
+      if (this.ChestMessageIndex !== null) {
+        interfaceHandler.RemoveGameText(this.ChestMessageIndex);
+        this.ChestMessageIndex = null;
+
+        minigame.canHoldSpace = false;
+      }
     }
   }
 }

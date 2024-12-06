@@ -13,15 +13,16 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
     <script type="module" src="./public/scripts/room.js"></script>
 
-    <script src="./public/scripts/Maze/MazeGenerator.js"></script>
-    <script src="./public/scripts/Maze/CharacterManager.js"></script>
-    <script src="./public/scripts/Maze/ChestHandler.js"></script>
-    <script src="./public/scripts/Maze/CameraHandler.js"></script>
-    <script src="./public/scripts/Maze/DebugHandler.js"></script>
-    <script src="./public/scripts/Maze/InterfaceHandler.js"></script>
-    <script src="./public/scripts/Maze/MinigameBar.js"></script>
-    <script src="./public/scripts/Maze/EffectsHandler.js"></script>
-    <script src="./public/scripts/Maze/DoorHandler.js"></script>
+    <script src="./public/scripts/Maze/Core/MazeGenerator.js"></script>
+    <script src="./public/scripts/Maze/Utils/IA.js"></script>
+    <script src="./public/scripts/Maze/Core/CharacterManager.js"></script>
+    <script src="./public/scripts/Maze/Handlers/ChestHandler.js"></script>
+    <script src="./public/scripts/Maze/Core/CameraHandler.js"></script>
+    <script src="./public/scripts/Maze/Utils/DebugHandler.js"></script>
+    <script src="./public/scripts/Maze/Handlers/InterfaceHandler.js"></script>
+    <script src="./public/scripts/Maze/Minigames/MinigameBar.js"></script>
+    <script src="./public/scripts/Maze/Core/EffectsManager.js"></script>
+    <script src="./public/scripts/Maze/Handlers/DoorHandler.js"></script>
     <script src="./public/scripts/Maze/sketch.js"></script>
 </head>
 <body>
@@ -64,7 +65,7 @@
                     <select id="monster-mode">
                         <option value="roomOwner">O monstro será o dono da sala</option>
                         <option value="randomPlayer">O monstro será um jogador aleatório</option>
-                        <option value="bot">O monstro será um bot</option>
+                        <option value="bot" disabled>O monstro será um bot (em desenvolvimento)</option>
                     </select>
                 </div>
                 <br />

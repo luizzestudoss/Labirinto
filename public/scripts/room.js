@@ -57,7 +57,6 @@ function RoomCreatorUI() {
                     }
                     seed = parsedSeed;
                 }
-                console.log(debugMode)
 
                 const roomData = {
                     mapDimensions: { width: mapWidth, height: mapHeight },
@@ -70,7 +69,6 @@ function RoomCreatorUI() {
                 };
 
                 window.Server.myRoom().setCustomProperties(roomData);
-                window.Server.raiseEvent(2, roomData);
 
                 if (seedElement) {
                     seedElement.textContent = `Seed: ${seed}`;
@@ -107,8 +105,6 @@ window.onload = () => {
             } else if (state === Photon.LoadBalancing.LoadBalancingClient.State.Joined) {
                 renderPlayerList(window.Server.myRoomActors());
                 RoomCreatorUI()
-
-                console.log(window.Server.myRoomActors())
             }
         };
 
@@ -128,8 +124,17 @@ window.onload = () => {
         };
 
         window.Server.onActorJoin = () => {
+            const actor = window.Server.myActor();
+        
+            if (!actor.getCustomProperty("name")) {
+                const defaultName = `Jogador ${actor.actorNr}`;
+                actor.setCustomProperties({ name: defaultName });
+            }
+    
+
             renderPlayerList(window.Server.myRoomActors());
         };
+        
 
         window.Server.onActorLeave = () => {
             renderPlayerList(window.Server.myRoomActors());

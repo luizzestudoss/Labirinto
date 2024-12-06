@@ -34,11 +34,13 @@ class DebugHandler {
   }
 
   updateSpeed() {
-    player.speed = this.debug.speed;
+    if (player) {
+      player.speed = this.debug.speed;
+    }
   }
 
   updateZoom() {
-    zoom = this.debug.zoom;
+    camera.setZoom(this.debug.zoom);
   }
 
   monitorPanelState() {

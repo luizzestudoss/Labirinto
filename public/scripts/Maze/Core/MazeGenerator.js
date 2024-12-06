@@ -85,12 +85,14 @@ class MazeGenerator {
 
     this.createLoops(this.difficulty);
   }
-
+  
   generateChest() {
     if (this.hasChest) return;
 
     let possibleCells = [];
     const minDistance = 3;
+
+    randomSeed(this.chestIndex);
 
     for (let x = 0; x < this.cols; x++) {
         for (let y = 0; y < this.rows; y++) {
@@ -115,9 +117,30 @@ class MazeGenerator {
             }
         }
     }
+
     if (possibleCells.length > 0) {
-        let randomIndex = this.chestIndex % possibleCells.length;
-        let chosenCell = possibleCells[randomIndex];
+        let farthestCells = [];
+        let maxDistance = -Infinity;
+
+        if (this.lastChestOpened) {
+            for (let cell of possibleCells) {
+                let dx = cell.x - this.lastChestOpened.x;
+                let dy = cell.y - this.lastChestOpened.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    farthestCells = [cell];
+                } else if (distance === maxDistance) {
+                    farthestCells.push(cell);
+                }
+            }
+        } else {
+            farthestCells = possibleCells;
+        }
+
+        let chosenIndex = this.chestIndex % farthestCells.length;
+        let chosenCell = farthestCells[chosenIndex];
 
         let chestX = chosenCell.x;
         let chestY = chosenCell.y;
@@ -127,48 +150,53 @@ class MazeGenerator {
     }
 }
 
-  addRandomDoors() {
-    const doorPositions = [
-      [Math.floor(this.cols / 2), 0],
-      [Math.floor(this.cols / 2), this.rows - 1],
-      [0, Math.floor(this.rows / 2)],
-      [this.cols - 1, Math.floor(this.rows / 2)]
-    ];
-  
-    randomSeed(this.seed);
 
-    let keys = ['Chave 1', 'Chave 2']; 
-  
-    for (let i = 0; i < 2; i++) {
-      let pos = doorPositions[i];
-      let x = pos[0];
-      let y = pos[1];
-  
-      let cell = this.grid[x][y];
-  
-      cell.isDoor = true;
-  
-      if (x === 0) cell.wallDoor = 3;
-      if (y === 0) cell.wallDoor = 0;
-      if (x === this.cols - 1) cell.wallDoor = 1;
-      if (y === this.rows - 1) cell.wallDoor = 2;
-  
-      if (x === 0) cell.walls[3] = false;
-      if (y === 0) cell.walls[0] = false;
-      if (x === this.cols - 1) cell.walls[1] = false; 
-      if (y === this.rows - 1) cell.walls[2] = false;
+addRandomDoors() {
+  const doorPositions = [
+    [Math.floor(this.cols / 2), 0],
+    [Math.floor(this.cols / 2), this.rows - 1],
+    [0, Math.floor(this.rows / 2)],
+    [this.cols - 1, Math.floor(this.rows / 2)]
+  ];
 
-      cell.Door = new DoorHandler(cell.wallDoor,this.Door1 ? 2 : 1)
-      cell.Door.assignKey(keys);
+  randomSeed(this.seed);
 
-      if (!this.Door1) {
-        this.Door1 = cell.Door
-      } else {
-        this.Door2 = cell.Door
+  let keys = ['Chave 1', 'Chave 2'];
+  let availablePositions = [...doorPositions];
+
+  for (let i = 0; i < 2; i++) {
+    let randomIndex = Math.floor(random() * availablePositions.length);
+    let pos = availablePositions.splice(randomIndex, 1)[0];
+
+    let x = pos[0];
+    let y = pos[1];
+
+    let cell = this.grid[x][y];
+
+    cell.isDoor = true;
+
+    if (x === 0) cell.wallDoor = 3;
+    if (y === 0) cell.wallDoor = 0;
+    if (x === this.cols - 1) cell.wallDoor = 1;
+    if (y === this.rows - 1) cell.wallDoor = 2;
+
+    if (x === 0) cell.walls[3] = false;
+    if (y === 0) cell.walls[0] = false;
+    if (x === this.cols - 1) cell.walls[1] = false; 
+    if (y === this.rows - 1) cell.walls[2] = false;
+
+    cell.Door = new DoorHandler(cell.wallDoor, this.Door1 ? 2 : 1);
+    cell.Door.assignKey(keys);
+
+    if (!this.Door1) {
+      this.Door1 = cell.Door;
+    } else {
+        this.Door2 = cell.Door;
       }
     }
-  }
-  
+}
+
+
 
   createLoops(probability) {
     for (let x = 1; x < this.cols - 1; x++) {
@@ -203,31 +231,40 @@ class MazeGenerator {
 
 
   RenderServerReplication() {
-    if (this.chest && this.chest.isOpened) {
+    if (window.Server.chestIndex !== this.chestIndex) {
+        this.chestIndex = window.Server.chestIndex;
+
+        this.chest.isOpened = true;
+        this.lastChestOpened = this.chest;
+
+        this.chest = null;
         this.hasChest = false;
 
+        this.generateChest();
+    }
+
+    if (this.chest && this.chest.isOpened) {
+        this.hasChest = false;
+        
         window.Server.raiseEvent(10);
 
         this.lastChestOpened = this.chest;
         this.chest = null;
+
+        this.chestIndex++;
+        window.Server.chestIndex = this.chestIndex;
+
         this.generateChest();
     }
 
-    if (window.Server.chestIndex !== this.chestIndex) {
-      this.chestIndex = window.Server.chestIndex
-      this.lastChestOpened = this.chest;
-      this.chest = null;
-      this.generateChest();
-    }
-
     if (window.Server.Doors[1] && !this.Door1.Opened) {
-      this.Door1.Opened = true;
+        this.Door1.Opened = true;
     }
 
     if (window.Server.Doors[2] && !this.Door2.Opened) {
-      this.Door2.Opened = true;
+        this.Door2.Opened = true;
     }
-  }
+}
 
   addBorderWalls() {
     for (let x = 0; x < this.cols; x++) {
@@ -304,8 +341,8 @@ class MazeGenerator {
   render() {
     this.RenderServerReplication()
 
-    let visibleWidth = Math.ceil(windowWidth / (this.cellSize * zoom));
-    let visibleHeight = Math.ceil(windowHeight / (this.cellSize * zoom));
+    let visibleWidth = Math.ceil(windowWidth / (this.cellSize * camera.zoom));
+    let visibleHeight = Math.ceil(windowHeight / (this.cellSize * camera.zoom));
   
     let centerX = Math.floor(player.pos.x / this.cellSize);
     let centerY = Math.floor(player.pos.y / this.cellSize);
@@ -349,10 +386,10 @@ class Cell {
 
   getNeighbors(grid) {
     let neighbors = [];
-    if (!this.walls[0] && grid[this.x]?.[this.y - 1]) neighbors.push(grid[this.x][this.y - 1]); // Cima
-    if (!this.walls[1] && grid[this.x + 1]?.[this.y]) neighbors.push(grid[this.x + 1][this.y]); // Direita
-    if (!this.walls[2] && grid[this.x]?.[this.y + 1]) neighbors.push(grid[this.x][this.y + 1]); // Baixo
-    if (!this.walls[3] && grid[this.x - 1]?.[this.y]) neighbors.push(grid[this.x - 1][this.y]); // Esquerda
+    if (!this.walls[0] && grid[this.x]?.[this.y - 1]) neighbors.push(grid[this.x][this.y - 1]);
+    if (!this.walls[1] && grid[this.x + 1]?.[this.y]) neighbors.push(grid[this.x + 1][this.y]);
+    if (!this.walls[2] && grid[this.x]?.[this.y + 1]) neighbors.push(grid[this.x][this.y + 1]);
+    if (!this.walls[3] && grid[this.x - 1]?.[this.y]) neighbors.push(grid[this.x - 1][this.y]);
     return neighbors;
 }
 

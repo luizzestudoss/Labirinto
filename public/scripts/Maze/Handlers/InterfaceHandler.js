@@ -23,11 +23,11 @@ class InterfaceHandler {
       resetMatrix();
 
       if (isHoldingSpace && minigame.active) {
-        minigame.update();
-        minigame.draw(width / 2 - 150, height - 50, 300, 15);
+        minigame.update(width / 2 - 150, height - 50, 300, 15);
       }
-    
+
       if (player.Type == "Player") {
+
           const barWidth = 300; 
           const barHeight = 10;
           const x = windowWidth - windowWidth * 0.25;
@@ -59,7 +59,7 @@ class InterfaceHandler {
             fill(255, 255, 255, opacity);
     
             textAlign(CENTER, CENTER);
-            textSize(20);
+            textSize(27);
             
             text(textObj.content, windowWidth * textObj.x, windowHeight * textObj.y);
         }

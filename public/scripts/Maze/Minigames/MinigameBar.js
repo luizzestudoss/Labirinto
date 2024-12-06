@@ -1,6 +1,6 @@
 class MinigameBar {
     constructor(duration, onComplete) {
-        this.duration = duration || 0;
+        this.duration = duration || 5000;
         this.onComplete = onComplete || null;
         this.progress = 0;
         this.active = false;
@@ -13,12 +13,11 @@ class MinigameBar {
         if (this.active) return;
         if (duration !== undefined) this.duration = duration;
         if (onComplete !== undefined) this.onComplete = onComplete;
-    
-        this.canHoldSpace = true;
     }
+    
 
     start() {
-        if (!this.canHoldSpace || this.active) return;
+        if (!this.canHoldSpace) return;
         this.progress = 0;
         this.active = true;
         this.paused = false;
@@ -30,8 +29,8 @@ class MinigameBar {
         this.active = false;
         this.paused = false;
         this.startTime = null;
-        this.canHoldSpace = true;
     }
+    
 
     pause() {
         if (this.active) {
@@ -46,8 +45,8 @@ class MinigameBar {
         }
     }
 
-    update() {
-        if (!this.active || this.paused) return;
+    update(x, y, width, height) {
+        if (!this.active || this.paused || !this.canHoldSpace) return;
 
         const elapsedTime = millis() - this.startTime;
         this.progress = constrain(elapsedTime / this.duration, 0, 1);
@@ -55,10 +54,13 @@ class MinigameBar {
         if (this.progress >= 1) {
             this.complete();
         }
+
+        this.draw(x, y, width, height)
     }
 
     complete() {
         this.active = false;
+        isHoldingSpace = false;
         if (this.onComplete) this.onComplete();
     }
 

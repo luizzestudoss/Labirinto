@@ -3,7 +3,6 @@ export let photonClient = null;
 export function createRoom(roomName) {
     if (roomName && photonClient) {
         photonClient.createRoom(roomName);
-        console.log("Tentando criar a sala:", roomName);
     } else {
         console.error("Erro: Nome da sala ou cliente Photon não definidos.");
     }
@@ -39,6 +38,7 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
             2: false
         }
         this.EscapedPlayers = {}
+        this.DeadPlayers = {}
 
         photonClient = this;
     }
@@ -49,7 +49,6 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
 
     onConnect() {
         this.isConnected = true;
-        console.log("está conectado!")
     }
 
     onDisconnect() {
@@ -64,7 +63,7 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
                 y: 0,
             },
         };
-
+    
         if (!this.roomCreator) {
             this.roomCreator = this.myActor().actorNr;
             
@@ -72,9 +71,7 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
             this.myRoom().setCustomProperties({ seed: randomSeed });
         }
         
-    
         this.myActor().setCustomProperties({ player: initialPlayerData });
-    
         this.currentPlayer = initialPlayerData;
     
         for (const actorId in this.myRoomActors()) {
@@ -85,10 +82,21 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
             };
             this.players[actorId] = playerData;
         }
-    
+        
         this.players[this.myActor().actorNr] = initialPlayerData;
     
-        this.raiseEvent(1, { roomCreator: this.roomCreator });
+        const fullState = {
+            players: this.players,
+            poisonedPlayers: this.getPoisonedPlayers(),
+            doors: this.Doors,
+            chestIndex: this.chestIndex,
+        };
+    
+        this.raiseEvent(4, { fullState }, { targetActors: [this.myActor().actorNr] });
+    }
+    
+    getPlayerData(playerId) {
+        return this.players[playerId] || null;
     }
 
     getSeed() {
@@ -106,9 +114,19 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
                 updatedPlayer.pos = { x: 0, y: 0 };
             }
             this.players[actor.actorNr] = updatedPlayer;
+    
+            if (updatedPlayer.isPoisoned) {
+                this.poisonedPlayers[actor.actorNr] = true;
+            } else {
+                delete this.poisonedPlayers[actor.actorNr];
+            }
+    
+            if (updatedPlayer.HasEscaped) {
+                this.EscapedPlayers[actor.actorNr] = true;
+            }
         }
     }
-
+    
     onLeaveRoom() {
         console.log("Jogador saiu da sala.");
     }
@@ -117,51 +135,77 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
     onEvent(code, content) {
         if (code === 1) {
             this.roomCreator = content.roomCreator;
-    
+
             this.players = {};
             for (const actorId in this.myRoomActors()) {
                 const actor = this.myRoomActors()[actorId];
                 const playerData = actor.getCustomProperty("player") || {};
-        
+    
                 this.players[actorId] = playerData;
+    
+                if (playerData.HasEscaped) {
+                    this.EscapedPlayers[actorId] = true;
+                } else if (playerData.isDead) {
+                    this.DeadPlayers[actorId] = true
+                }
             }
         } else if (code === 2) {
             const actorId = content.actorId;
             const isPoisoned = content.isPoisoned;
-
+        
             const actor = this.myRoomActors()[actorId];
             if (actor) {
                 const playerData = actor.getCustomProperty("player") || {};
                 playerData.isPoisoned = isPoisoned;
-    
+        
                 actor.setCustomProperty("player", playerData);
+        
                 this.players[actorId] = playerData;
-    
+        
+                this.poisonedPlayers = this.poisonedPlayers || {};
                 if (isPoisoned) {
-                    this.poisonedPlayers = this.poisonedPlayers || {};
                     this.poisonedPlayers[actorId] = true;
-                } else if (this.poisonedPlayers) {
+                } else {
                     delete this.poisonedPlayers[actorId];
                 }
-            } else {
-                console.error(`Ator ${actorId} não encontrado!`);
+        
+                this.raiseEvent(3, { actorId, isPoisoned }, { receivers: "All" });
+            } else if (code === 3) {
+                const { actorId, isPoisoned } = content;
+
+                const actor = this.myRoomActors()[actorId];
+                if (actor) {
+                    const playerData = actor.getCustomProperty("player") || {};
+                    playerData.isPoisoned = isPoisoned;
+            
+                    actor.setCustomProperty("player", playerData);
+                    this.players[actorId] = playerData;
+            
+                    if (isPoisoned) {
+                        this.poisonedPlayers = this.poisonedPlayers || {};
+                        this.poisonedPlayers[actorId] = true;
+                    } else if (this.poisonedPlayers) {
+                        delete this.poisonedPlayers[actorId];
+                    }
             }
+        } else if (code === 4) {
+            const { fullState } = content;
+
+            this.players = fullState.players || {};
+            this.poisonedPlayers = fullState.poisonedPlayers || {};
+            this.Doors = fullState.doors || {};
+            this.chestIndex = fullState.chestIndex || 0;
+        } 
         } else if (code === 10) {
             this.chestIndex += 1
-
-            maze.hasChest = false;
-            maze.generateChest();
         } else if (code === 20) {
             const doorIndex = content.doorIndex
 
             this.Doors[doorIndex] = true
-        } else if (code === 30) {
-            const playerId = content.playerId;
-            console.log(playerId)
-            //this.EscapedPlayers[playerId] = true;
-        
-            gameRunning = false;
-            hasExited = true;
+        } else if (code === 40) {
+            const massage = content.message
+
+            interfaceHandler.AddGameText(massage, 0.5, 0.2,3500)
         }
     }
 
@@ -170,10 +214,17 @@ export class PhotonGameClient extends Photon.LoadBalancing.LoadBalancingClient {
     }
 
     getEscapedPlayers() {
-        return Object.keys(this.EscapedPlayers);
+        return this.EscapedPlayers;
+    }
+
+    getDeadPlayers() {
+        return this.DeadPlayers;
+    }
+
+    getPoisonedPlayers() {
+        return this.poisonedPlayers
     }
     
-
     onError(errorCode, errorMsg) {
         console.error(`Photon Error: ${errorCode} - ${errorMsg}`);
     }
