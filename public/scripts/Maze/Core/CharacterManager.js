@@ -207,7 +207,7 @@ class CharacterManager {
             }
         }
       
-        this.showName()
+        //this.showName()
 
         if (debug.showHitbox) {
           const hitboxSize = this.w / 2;
