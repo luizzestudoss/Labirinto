@@ -162,7 +162,7 @@ function initializeGame() {
           players.push(player);
           isSpiderDelayed = false;
 
-          window.Server.ariseEvent(40,{message: "A aranha acabou de nascer no meio!"})
+          window.Server.raiseEvent(40,{message: "A aranha acabou de nascer no meio!"})
       }, debug.debugMode ? 1500 : 15000);
   } else {
       player = new CharacterManager(createVector(startX, startY), cellSize, maze.grid, characterType);
